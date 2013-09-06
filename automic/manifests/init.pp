@@ -1,0 +1,3 @@
+class automic {
+  # something there
+}
