@@ -1,3 +1,0 @@
-class automic {
-  # something there
-}
