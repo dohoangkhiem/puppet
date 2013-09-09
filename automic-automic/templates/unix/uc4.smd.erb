@@ -1,0 +1,17 @@
+VAR SRV_STARTPATH;*OWN/../../AutomationEngine/bin
+VAR CP_STARTCMD;*SRV_STARTPATH/ucsrvcp *SRV_STARTPATH/ucsrv.ini -svc%port%
+VAR WP_STARTCMD;*SRV_STARTPATH/ucsrvwp *SRV_STARTPATH/ucsrv.ini -svc%port%
+VAR WP_STARTCMD_COLD;*WP_STARTCMD -parm"StartMode=Cold"
+VAR WP_STARTCMD_STOP;*WP_STARTCMD -parm"SystemStop=Yes"
+VAR WP_STARTCMD_COLDSTOP;*WP_STARTCMD -parm"StartMode=Cold;SystemStop=Yes"
+! Remark lines with a leading !
+!
+! This are the UC4-subservices
+DEFINE UC4 WP1;*WP_STARTCMD;*SRV_STARTPATH;START1=(Coldstart,*WP_STARTCMD_COLD);START2=(Systemstop,*WP_STARTCMD_STOP);START3=(Coldstart with Systemstop,*WP_STARTCMD_COLDSTOP)
+DEFINE UC4 WP2;*WP_STARTCMD;*SRV_STARTPATH;START1=(Coldstart,*WP_STARTCMD_COLD);START2=(Systemstop,*WP_STARTCMD_STOP);START3=(Coldstart with Systemstop,*WP_STARTCMD_COLDSTOP)
+DEFINE UC4 WP3;*WP_STARTCMD;*SRV_STARTPATH;START1=(Coldstart,*WP_STARTCMD_COLD);START2=(Systemstop,*WP_STARTCMD_STOP);START3=(Coldstart with Systemstop,*WP_STARTCMD_COLDSTOP)
+DEFINE UC4 CP1;*CP_STARTCMD;*SRV_STARTPATH
+DEFINE UC4 CP2;*CP_STARTCMD;*SRV_STARTPATH
+DEFINE <%= @uc4_service_name%>;<%= node['uc4agent']['path']%>/bin/<%= @executable_file%> <%= node['uc4agent']['path']%>/bin/<%= @ini_file%>;<%= node['uc4agent']['path']%>/bin/
+
+

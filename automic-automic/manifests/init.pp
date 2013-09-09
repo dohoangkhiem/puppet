@@ -29,13 +29,32 @@
 #
 # === Authors
 #
-# Author Name <author@domain.com>
+# Author Name <kdh@automic.com>
 #
 # === Copyright
 #
-# Copyright 2011 Your name here, unless otherwise noted.
+# Copyright 2013 Automic Software Inc.
 #
-class automic {
-
-
+class automic (
+  $ostype                         = $automic::params::ostype,
+  $path                           = $automic::params::path,
+  $cp                             = $automic::params::cp  
+  $port                           = $automic::params::port
+  $agentname                      = $automic::params::agentname
+  $systemname                     = $automic::params::systemname
+  $license_class                  = $automic::params::license
+  $path                           = $automic::params::path
+  $user                           = $automic::params::user
+  $servicemanager_autostart       = $automic::params::servicemanger_autostart
+  $servicemanager_autostart_delay = $automic::params::servicemanager_autostart_delay
+  $servicemanager_port            = $automic::params::servicemanager_port
+  $servicemanager_path            = $automic::params::servicemanager_path
+  $servicemanager_path_dialog     = $automic::params::servicemanager_path_dialog
+  $servicemanager_phrase          = $automic::params::servicemanager_phrase
+  $servicemanager_smc_file        = $automic::params::servicemanager_smc_file
+  $servicemanager_smd_file        = $automic::params::servicemanager_smd_file
+) inherits automic::params {
+  # installs Automic Agent and Service Manager
+  include automic::agent
+  include automic::service_manager
 }

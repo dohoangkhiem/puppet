@@ -1,0 +1,158 @@
+[GLOBAL]
+name			=	<%= @agentname %>
+system		=	<%= @systemname %>
+
+logging 		=	../temp/ucxjl<%= @file_suffix %>_l##.txt
+logcount		=	10
+helplib		    =	ucx.msl
+licence_class	=	<%= @license_class %>
+
+; language		=	e,d
+
+; userid_type	=	EXCL
+; UC_user_type	=	EXCL
+
+; rcv_block		=	no
+; rcv_max		=	30
+
+; login_check	=	no
+; ReadUserAlways	=	no
+; ReportMode	=	600
+; JobFileMode	=	700
+; ft_temp_file	=	yes
+
+; KillSignal	=	SIGKILL
+; FT_Owner		=	user
+
+; FileProcessingMaxDepth = 0
+; FileProcessingTimeout  = 0
+
+
+[MISC]
+; FileBufferSize		=	32k
+;
+; authentication		=	local
+; TraceFileSize		=	32M
+; FileEndDelimiter     =  yes
+; processinfo		=	no
+; MsgToStdout		=	yes
+
+
+[USERID]
+
+; access to normal user requires:
+; - allowed (only these are allowed):
+;   - [GLOBAL] - userid_type=INCL
+;   - [USERID] - userid=START
+; - not allowed (all other userids are allowed):
+;   - [GLOBAL] - userid_type=EXCL
+;   - [USERID] - userid=NO_START
+; uc4			=  NO_START
+
+; - access for root user requires:
+;   - [USERID] - root=START
+root  =  START
+
+
+[UC_USER]
+
+; access to UC4-users:
+; - allowed (only these are allowed):
+;   - [GLOBAL] - UC_user_type=INCL
+;   - [USERID] - UC4_user_idnr=START
+; - not allowed (all other userids are allowed):
+;   - [GLOBAL] - UC_user_type=EXCL
+;   - [USERID] - UC4_user_idnr=NO_START
+; 6		=	START
+; 7		=	NO_START
+
+
+[FILETRANSFER]
+
+; ft_check_free_disk_space=yes
+;   standard : ft_check_free_disk_space=no
+
+[VARIABLES]
+
+UC_HOST_CODE			=	UC_CODE
+UC_HOST_JCL_VAR			=	UNIX
+UC_EX_PATH_BIN			=	./
+UC_EX_PATH_JOBREPORT	=	../out/
+UC_EX_PATH_TEMP			=	../temp/
+UC_EX_PATH_BACKUP		=	../backup/
+UC_EX_JOB_MD			=	ucxjl<%= @file_suffix%>m
+; UC_EX_FILE_MASK_PROCESS	=	EVENTFILE.RRRRRRR.PP.MM.txt
+
+
+[TRACE]
+
+file			=	../temp/ucxjl<%= @file_suffix%>_t##.txt
+trccount		=	10
+; tcp/ip		=	0
+; event		    =	0
+; job_debug		=	0
+; ft_debug		=	0
+; ex_init		=	0
+; signal		=	0
+; mail			=	0
+
+
+[HOSTS]
+
+; Overwrite IP destination in case of IP NATing problems (e.g. firewalls)
+; <UC4-name>=<dns-name> or
+; <UC4-name>=<ip-addr>
+
+
+[TCP/IP]
+
+port			=	<%= @port %>
+; bindaddr		=	111.1.1.1
+; bindlocal		=	0
+; connect		=   60
+; maxrepcnt		=	8
+cp				=	<%= @cp %>:2217
+; chiffre		=	1
+; RecvBufferSize	=	1024k
+;   default : RecvBufferSize=1M
+; SendBufferSize	=	1024k
+;   default : SendBufferSize=1M
+; tcp_nodelay=no
+;   default : tcp_nodelay=yes
+; tcp_keepalive=no
+;   default : tcp_keepalive=yes
+; tcp_keepalive_time=6600
+;   default : tcp_keepalive_time=0
+
+
+[STARTCMD]
+
+; start_type         =  batch
+;
+; default start_type is fork
+; the next scripts are only necessary if the start_type ist batch.
+; if you are using batch, so the script have to be activated.
+
+; Bourne-Shell =  nohup batch < `su - &user -c "&jobFile 1>> &jobReport 2>&1"`&
+; C-Shell      =  nohup batch < `su - &user -c "&jobFile >>& &jobReport"`&
+; Korn-Shell   =  nohup batch < `su - &user -c "&jobFile 1>> &jobReport 2>&1"`&
+; Other-Shell  =  nohup batch < `su - &user -c "&jobFile 1>> &jobReport 2>&1"`&
+
+; Only for SunOS 5.4 (US4):
+; [STARTCMD]
+; Bourne-Shell =  batch < `su - &user -c "nohup &jobFile >> &jobReport 2>&1"`&
+; C-Shell      =  batch < `su - &user -c "nohup &jobFile >>& &jobReport"`&
+; Korn-Shell   =  batch < `nohup su - &user -c "&jobFile >>& &jobReport 2>&1"`&
+; Other-Shell  =  batch < `nohup su - &user -c "&jobFile >>& &jobReport 2>&1"`&
+
+; only for Solaris
+;[PAM]
+; libname=libpam.so
+
+[CP_LIST]
+2218=<%= @cp %>
+2219=<%= @cp %>
+
+[AUTHORIZATION]
+KeyStore=
+InitialPackage=
