@@ -1,6 +1,6 @@
-VAR SRV_STARTPATH;*OWN/../../AutomationEngine/bin
-VAR CP_STARTCMD;*SRV_STARTPATH/ucsrvcp *SRV_STARTPATH/ucsrv.ini -svc%port%
-VAR WP_STARTCMD;*SRV_STARTPATH/ucsrvwp *SRV_STARTPATH/ucsrv.ini -svc%port%
+VAR SRV_STARTPATH;*OWN\..\..\AutomationEngine\bin
+VAR CP_STARTCMD;*SRV_STARTPATH\UCsrvcp.exe *SRV_STARTPATH\ucsrv.ini -svc%port%
+VAR WP_STARTCMD;*SRV_STARTPATH\UCsrvwp.exe *SRV_STARTPATH\ucsrv.ini -svc%port%
 VAR WP_STARTCMD_COLD;*WP_STARTCMD -parm"StartMode=Cold"
 VAR WP_STARTCMD_STOP;*WP_STARTCMD -parm"SystemStop=Yes"
 VAR WP_STARTCMD_COLDSTOP;*WP_STARTCMD -parm"StartMode=Cold;SystemStop=Yes"
@@ -12,6 +12,6 @@ DEFINE UC4 WP2;*WP_STARTCMD;*SRV_STARTPATH;START1=(Coldstart,*WP_STARTCMD_COLD);
 DEFINE UC4 WP3;*WP_STARTCMD;*SRV_STARTPATH;START1=(Coldstart,*WP_STARTCMD_COLD);START2=(Systemstop,*WP_STARTCMD_STOP);START3=(Coldstart with Systemstop,*WP_STARTCMD_COLDSTOP)
 DEFINE UC4 CP1;*CP_STARTCMD;*SRV_STARTPATH
 DEFINE UC4 CP2;*CP_STARTCMD;*SRV_STARTPATH
-DEFINE <%= @service_name %>;<%= @path %>/bin/ucxjl<%= @file_suffix %> <%= @path %>/bin/ucxjl<%= @file_suffix %>.ini;<%= @path %>/bin/
+DEFINE UC4 SAP-Agent;java -jar -Xrs -Xmx256M ucxjr3x.jar;*OWN\..\..\Agents\SAP\bin\
 
-
+DEFINE <%= @service_name %>;<%= @path %>\bin\ucxjw<%= @file_suffix %>.exe <%= @path %>\bin\ucxjw<%= @file_suffix %>.ini;<%= @path %>\bin\;

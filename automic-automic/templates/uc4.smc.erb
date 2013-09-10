@@ -1,0 +1,6 @@
+<% if @servicemanager_autostart_delay == 0 %>
+!AIT 0
+<% else %>
+WAIT <%= @servicemanager_autostart_delay %>
+<% end %>
+CREATE <%= @service_name %>

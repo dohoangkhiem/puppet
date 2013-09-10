@@ -8,19 +8,32 @@ class automic::agent::agent_unix {
   
   # copy Automic agent package
   file { "agent_pkg":
-    source => "puppet:///modules/automic/ucagentl${file_suffix}.tar.gz",
+    source => "puppet:///modules/automic/unix/ucagentl${file_suffix}.tar.gz",
     path => "${cache_path}/automic_agent.tar.gz",
     ensure => file,
   }
 
   # check target location
+  #file { ["/opt/uc4", $automic::path]: 
+  #  ensure => directory,
+  #  mode => 0755,
+  #  owner => 'root',
+  #  group => 'root',
+  #  recurse => true
+  #}
+
+  exec { "create_agent_dir":
+    command => "/bin/mkdir -p ${automic::path}"
+  }
+
   file { "agent_dir": 
     ensure => directory,
-    path => ["/opt/uc4", $automic::path],
+    path => $automic::path,
     mode => 0755,
     owner => 'root',
     group => 'root',
-    recurse => true
+    recurse => true,
+    require => Exec["create_agent_dir"],
   }
 
   # extract to target

@@ -1,0 +1,83 @@
+[GLOBAL]
+name=<%= node['uc4agent']['agentname'] %>
+system=<%= node['uc4agent']['systemname'] %>
+
+logon=1
+language=(E,D)
+logging=..\TEMP\UCXJWX6_LOG_##.TXT
+logcount=10
+helplib=UC.MSL
+helpcache=ALL
+; licence_class=9
+license_class=<%= node['uc4agent']['license_class'] %>
+
+; userid_type=INCL
+; use Windows Job Objects 0=no/1=yes
+useJobObject=0
+ECPEXE=<%= node['kernel']['os_info']['system_directory']%>\WindowsPowerShell\v1.0\powershell.exe
+ECPEXT=ps1
+ft_temp_file=yes
+HomeDirCache=10
+
+; FileProcessingMaxDepth = 0
+; FileProcessingTimeout  = 0
+
+
+[USERID]
+; user/domain=START
+
+
+[STATUS_CHECK]
+time=1
+
+
+[VARIABLES]
+UC_HOST_CODE=UC_CODE
+UC_HOST_JCL_VAR=WINDOWS
+UC_EX_PATH_BIN=.
+UC_EX_PATH_TEMP=..\TEMP\
+UC_EX_PATH_JOBREPORT=..\TEMP\
+UC_EX_JOB_MD=.\UCXJWX6M.EXE
+UC_EX_PATH_BACKUP=..\BACKUP
+
+
+[TRACE]
+file=..\TEMP\UCXJWX6_TRACE_##.TXT
+trccount=10
+tcp/ip=0
+mail=0
+filetransfer=0
+event=0
+compress=0
+memory=0
+
+
+[TCP/IP]
+port=<%= node['uc4agent']['port'] %>
+bindaddr=
+bindlocal=0
+; try all n seconds to connect to server
+connect=60
+report=60
+SendBufferSize=1048576
+RecvBufferSize=1048576
+cp=<%= node['uc4agent']['cp']%>:2217
+
+TcpKeepAliveTime=yes
+tcp_nodelay=yes
+
+
+[HOSTS]
+; Overwrite IP destination in case of IP NATing problems
+;  (e.g. firewalls)
+; <UC4-name>=<dns-name> or
+; <UC4-name>=<ip-addr>
+
+
+[CP_LIST]
+2218=<%= node['uc4agent']['cp'] %>
+2219=<%= node['uc4agent']['cp'] %>
+
+[AUTHORIZATION]
+KeyStore=
+InitialPackage=

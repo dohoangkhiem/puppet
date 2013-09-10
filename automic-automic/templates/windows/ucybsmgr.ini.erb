@@ -1,16 +1,20 @@
 [GLOBAL]
 language=(E,D)
-logging=../temp/SMgr_log_##.txt
-logcount=5
-helplib=./uc.msl
+logging=*OWN\..\temp\SMgr_LOG_##.txt
+logcount=10
+helplib=*OWN\UC.msl
 helpcache=all
 port=<%= @servicemanager_port %>
 restart_limit=(60,3)
 
 [TRACE]
-file=../temp/SMgr_trace.txt
+file=*OWN\..\temp\SMgr_TRACE_##.txt
+trccount=10
+
 cmd=0
+tcp/ip=0
 
 [Destination UC4]
 deffile=<%= @servicemanager_smd_file %>
 cmdfile=<%= @servicemanager_smc_file %>
+

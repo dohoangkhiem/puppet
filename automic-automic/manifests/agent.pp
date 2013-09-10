@@ -38,7 +38,7 @@
 
 class automic::agent {
 
-  case $::$architecture {
+  case $::architecture {
     /i(.{1})86/: { $file_suffix = 'i3' }
     /x(.*)64/: { $file_suffix = 'x6' }
     /ia(.*)64/: { $file_suffix = 'i6' }
