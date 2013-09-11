@@ -36,7 +36,6 @@
 # Copyright 2013 Automic Software Inc.
 #
 class automic (
-  $path                           = $automic::params::path,
   $cp                             = $automic::params::cp,  
   $port                           = $automic::params::port,
   $agentname                      = $automic::params::agentname,

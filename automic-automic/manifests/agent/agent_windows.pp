@@ -52,7 +52,6 @@ class automic::agent::agent_windows {
   file { "${automic::path}/bin/ucxjl${file_suffix}.ini":
     ensure => file,
     content => template('automic/unix/ucxjlxx.ini.erb'),
-    mode => 0644, 
     require => Exec['extract_agent_package'],
   }
 
@@ -60,7 +59,7 @@ class automic::agent::agent_windows {
   file { "${automic::path}/bin/ARATools.jar":
     source => "puppet:///modules/automic/ARATools.jar",
     ensure => present,
-    require => [ Exec["extract_agent_package"] ]
+    require => Exec["extract_agent_package"],
   }    
 
   info("Automic agent installation finished successfully!")
