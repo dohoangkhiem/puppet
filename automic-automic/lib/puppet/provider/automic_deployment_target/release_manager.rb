@@ -1,5 +1,5 @@
 #
-# required gems: httpclient, savon
+# required gems: httpclient, savon >= 2.0
 #
 
 require 'rexml/document'
@@ -11,43 +11,47 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
   
   WSDL_PATH = "/service/ImportExportService.asmx?wsdl"
   
-  $url = 'http://172.16.36.12/4low' # @resource[:connection][:url]
-  $username = 'admin' # @resource[:connection][:username]
-  $password = 'bond'  # @resource[:connection][:password]
-  $client = Savon.client(wsdl: $url + WSDL_PATH)
-
   # check if deployment target with name resource[:name] exists or not
   def exists?
-     # try export deployment target
-    target_name = @resource[:name]
+    name = @resource[:name]
+
+    raise Puppet::Error, "Target name must not be empty!" if empty_str?(name)
+    
+    if @resource[:connection].nil? || @resource[:connection].empty? || empty_str?(@resource[:connection]['url'])
+      raise Puppet::Error, "Connection must be a hash contains valid url, username and password to authenticate against Automic Release Manager"
+    end
+
+    client = Savon.client(wsdl: @resource[:connection]['url'] + WSDL_PATH)
+    
+    # try export deployment target
     begin
-      message = { "username" => $username, "password" => $password, "mainType" => "DeploymentTarget", "format" => "CSV", "begin" => 0, "count" => 1, 
-                  "properties" => { :string => "system_name" }, "conditions" => { :string => "system_name eq '#{target_name}'" } }
-      response = $client.call(:export, message: message)
+      message = { "username" => @resource[:connection]['username'], "password" => @resource[:connection]['password'], "mainType" => "DeploymentTarget", "format" => "CSV", "begin" => 0, "count" => 1, 
+                  "properties" => { :string => "system_name" }, "conditions" => { :string => "system_name eq '#{name}'" } }
+      response = client.call(:export, message: message)
       
       token = response.body[:export_response][:export_result][:token]
       self.debug("Got token: #{token}")
 
       # retrieve data via GetStatus service
       while true
-        response = $client.call(:get_status, message: { "token" => token })
+        response = client.call(:get_status, message: { "token" => token })
         sleep 1
-        if response.body[:get_status_response][:get_status_result][:status] != 0
+        if response.body[:get_status_response][:get_status_result][:status].to_i != 0
           break
         end
       end
       
       data = response.body[:get_status_response][:get_status_result][:data]
       if not data.nil? and data.lines.count > 1      
-        self.info("Deployment target #{target_name} already exists.")
+        self.info("Deployment target #{name} already exists")
         return true
       else
-        self.info("No deployment target name '#{target_name}'")
+        self.info("No deployment target name '#{name}'")
         return false
       end
   
     rescue Exception => e
-      self.info("Failed to check deployment target #{target_name}. We will assume that this target does not exist")
+      self.info("Failed to check deployment target #{name}. We will assume that this target does not exist")
       self.debug(e.message)
       self.debug(e.backtrace.inspect)
       false
@@ -57,9 +61,13 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
   # create new deployment target
   def create
     name = @resource[:name]
+    client = Savon.client(wsdl: @resource[:connection]['url'] + WSDL_PATH)
+
     environment = @resource[:environment]
     custom_props = @resource[:properties]
     dynamic_props = @resource[:dynamic_properties]
+
+    raise Puppet::Error, "Target name, folder, owner and type must not be empty!" if empty_str?(name) or empty_str?(@resource[:folder]) or empty_str?(@resource[:owner]) or empty_str?(@resource[:type])
 
     self.info("Importing deployment target..")
     
@@ -88,9 +96,9 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
       end
     end
   
-    message = { "username" => $username, "password" => $password, "mainType" => "DeploymentTarget", "failOnError" => true, "fomat" => "XML", "data" => doc.to_s }
+    message = { "username" => @resource[:connection]['username'], "password" => @resource[:connection]['password'], "mainType" => "DeploymentTarget", "failOnError" => true, "fomat" => "XML", "data" => doc.to_s }
     
-    response = $client.call(:import, message: message)
+    response = client.call(:import, message: message)
 
     # check error and status
     status = response.body[:import_response][:import_result][:status].to_i 
@@ -98,10 +106,10 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
 
     self.debug("Got token: #{token}")
     
-    # wait for target id return
+    # wait for target id return in status
     while status == 0
       sleep 1
-      response = $client.call(:get_status, message: { "token" => token } )
+      response = client.call(:get_status, message: { "token" => token } )
       status = response.body[:get_status_response][:get_status_result][:status].to_i 
     end
 
@@ -119,9 +127,9 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
     # add environment
     if not environment.nil? and not environment.empty?
       begin
-        env_id = get_environment_id(environment)
+        env_id = get_environment_id(client, environment)
         if (env_id > 0)
-          add_environment_relation(env_id, name)
+          add_environment_relation(client, env_id, name)
         end
       rescue Exception => e
         self.info("Error occurred while updating environment for deployment target")    
@@ -133,7 +141,7 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
     # update dynamic properties
     if not dynamic_props.nil? and not dynamic_props.empty?
       begin
-        update_dynamic_properties(status, dynamic_props)
+        update_dynamic_properties(client, status, dynamic_props)
       rescue Exception => e
         self.info("Error occurred while updating dynamic properties for deployment target")    
         self.debug(e.message)
@@ -150,23 +158,25 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
     self.info("Nothing to destroy")
   end
 
-  # utility methods
+
   # retrives environment id from its name
-  def get_environment_id(name)
+  # @param client the savon client
+  # @param name the target name
+  def get_environment_id(client, name)
 
     self.info("Getting environment id from name '#{name}'")
           
-    message = { "username" => $username, "password" => $password, "mainType" => "Environment", "format" => "CSV", "begin" => 0, "count" => 1, 
+    message = { "username" => @resource[:connection]['username'], "password" => @resource[:connection]['password'], "mainType" => "Environment", "format" => "CSV", "begin" => 0, "count" => 1, 
                 "properties" => { :string => "system_id" }, "conditions" => { :string => "system_name eq '#{name}'" } }
     
-    response = $client.call(:export, message: message)
+    response = client.call(:export, message: message)
     
     token = response.body[:export_response][:export_result][:token]
     self.debug("Got token: #{token}")
 
     while true
-      response = $client.call(:get_status, message: { "token" => token })
-      if response.body[:get_status_response][:get_status_result][:status] != 0
+      response = client.call(:get_status, message: { "token" => token })
+      if response.body[:get_status_response][:get_status_result][:status].to_i != 0
         break
       end
       sleep 1
@@ -186,18 +196,21 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
   end
 
   # add environment relation to target
-  def add_environment_relation(env_id, target_name)
+  # @param client the savon client
+  # @param env_id the environment id
+  # @param name the target name
+  def add_environment_relation(client, env_id, name)
 
-    self.info("Adding environment relation to target'#{target_name}'..")
+    self.info("Adding environment relation to target'#{name}'..")
 
     # add environment relation to target
     csv_string = CSV.generate do |csv|
       csv << ["system_environment.system_id", "system_deployment_target.system_name"]
-      csv << [env_id, target_name]
+      csv << [env_id, name]
     end
 
-    message = { "username" => $username, "password" => $password, "mainType" => "EnvironmentDeploymentTargetRelation", "failOnError" => true, "fomat" => "CSV", "data" => csv_string}
-    response = $client.call(:import, message: message)
+    message = { "username" => @resource[:connection]['username'], "password" => @resource[:connection]['password'], "mainType" => "EnvironmentDeploymentTargetRelation", "failOnError" => true, "fomat" => "CSV", "data" => csv_string}
+    response = client.call(:import, message: message)
 
     status = response.body[:import_response][:import_result][:status].to_i 
     
@@ -207,14 +220,14 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
     
     #while status == 0
     #  sleep 1
-    #  response = $client.call(:get_status, message: { "token" => token } )
+    #  response = client.call(:get_status, message: { "token" => token } )
     #  status = response.body[:get_status_response][:get_status_result][:status].to_i 
     #end
 
     error = response.body[:import_response][:import_result][:error]    
 
     if status < 0
-      self.info("Unsuccessfully add environment id #{env_id} to target #{target_name}")
+      self.info("Unsuccessfully add environment id #{env_id} to target #{name}")
       if not error.nil? and not error.empty?
         self.info("Error detail: " + error.to_s)
       end
@@ -225,7 +238,10 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
   end
 
   # update dynamic properties of given target
-  def update_dynamic_properties(target_id, dynamic_props)
+  # @param client the savon client
+  # @param target_id the target id
+  # @param dynamic_props dynamic properties hash
+  def update_dynamic_properties(client, target_id, dynamic_props)
       
     self.info("Updating dynamic properties for target #{target_id} ..")
   
@@ -262,9 +278,9 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
     end
   
     # "fomat" is intended, this is a typo mistake from RM Data API
-    message = { "username" => $username, "password" => $password, "mainType" => "DynamicProperty", "failOnError" => false, "fomat" => "XML", "data" => doc.to_s }
+    message = { "username" => @resource[:connection]['username'], "password" => @resource[:connection]['password'], "mainType" => "DynamicProperty", "failOnError" => false, "fomat" => "XML", "data" => doc.to_s }
     
-    response = $client.call(:import, message: message)
+    response = client.call(:import, message: message)
 
     # check error and status
     status = response.body[:import_response][:import_result][:status].to_i 
@@ -282,6 +298,11 @@ Puppet::Type.type(:automic_deployment_target).provide :release_manager do
     end
     
     self.info("Dynamic properties update finished")
+  end
+
+  def empty_str?(str)
+    return true if str.nil? or str.empty? or str.strip == ""
+    false
   end
 
 end
