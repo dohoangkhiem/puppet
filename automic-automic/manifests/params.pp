@@ -17,7 +17,7 @@ class automic::params {
   $license_class = 1
   $path = $ostype ? {
     'unix' => '/opt/uc4/agent',
-    'windows' => "C:/uc4/Agents/windows",
+    'windows' => "C:\\uc4\\Agents\\windows",
   }
   $user = 'uc4'
   $servicemanager_autostart = "yes"
@@ -25,18 +25,19 @@ class automic::params {
   $servicemanager_port = 8871
   $servicemanager_path = $ostype ? {
     'unix' => '/opt/uc4/smgr',
-    'windows' => "C:/uc4/ServiceManager",
+    'windows' => "C:\\uc4\\ServiceManager",
   }
-  $servicemanager_path_dialog = undef
-  if $ostype == 'windows' { $servicemanager_path_dialog = "C:/uc4/ServiceManagerDialog" }
+  
+  if $ostype == 'windows' { $servicemanager_path_dialog = "C:\\uc4\\ServiceManagerDialog" }
+  else { $servicemanager_path_dialog = undef }
 
   $servicemanager_phrase = 'UC4'
   $servicemanager_smc_file = $ostype ? {
     'unix' => "${servicemanager_path}/bin/uc4.smc",
-    'windows' => "${servicemanager_path}/bin/UC4.smc",
+    'windows' => "${servicemanager_path}\\bin\\UC4.smc",
   }
   $servicemanager_smd_file = $ostype ? {
     'unix' => "${servicemanager_path}/bin/uc4.smd",
-    'windows' => "${servicemanager_path}/bin/UC4.smd",
+    'windows' => "${servicemanager_path}\\bin\\UC4.smd",
   }
 }

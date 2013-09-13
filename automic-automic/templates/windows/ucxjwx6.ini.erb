@@ -1,6 +1,6 @@
 [GLOBAL]
-name=<%= node['uc4agent']['agentname'] %>
-system=<%= node['uc4agent']['systemname'] %>
+name=<%= @agentname %>
+system=<%= @systemname %>
 
 logon=1
 language=(E,D)
@@ -9,12 +9,12 @@ logcount=10
 helplib=UC.MSL
 helpcache=ALL
 ; licence_class=9
-license_class=<%= node['uc4agent']['license_class'] %>
+license_class=<%= @license_class %>
 
 ; userid_type=INCL
 ; use Windows Job Objects 0=no/1=yes
 useJobObject=0
-ECPEXE=<%= node['kernel']['os_info']['system_directory']%>\WindowsPowerShell\v1.0\powershell.exe
+ECPEXE=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 ECPEXT=ps1
 ft_temp_file=yes
 HomeDirCache=10
@@ -53,7 +53,7 @@ memory=0
 
 
 [TCP/IP]
-port=<%= node['uc4agent']['port'] %>
+port=<%= @port %>
 bindaddr=
 bindlocal=0
 ; try all n seconds to connect to server
@@ -61,7 +61,7 @@ connect=60
 report=60
 SendBufferSize=1048576
 RecvBufferSize=1048576
-cp=<%= node['uc4agent']['cp']%>:2217
+cp=<%= @cp %>:2217
 
 TcpKeepAliveTime=yes
 tcp_nodelay=yes
@@ -75,8 +75,8 @@ tcp_nodelay=yes
 
 
 [CP_LIST]
-2218=<%= node['uc4agent']['cp'] %>
-2219=<%= node['uc4agent']['cp'] %>
+2218=<%= @cp %>
+2219=<%= @cp %>
 
 [AUTHORIZATION]
 KeyStore=
