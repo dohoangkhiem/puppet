@@ -2,11 +2,14 @@
 # required gems: httpclient, savon >= 2.0
 #
 
+require 'rubygems'
 require 'rexml/document'
 require 'csv'
-require 'savon'
+require 'savon' if Puppet.features.savon?
 
 Puppet::Type.type(:automic_deployment_target).provide :release_manager do
+  confine :feature => :savon
+  
   desc "Release Manager provider to provide RM actions to deployment target type"
   
   WSDL_PATH = "/service/ImportExportService.asmx?wsdl"

@@ -3,8 +3,6 @@
 
 class automic::servicemanager::servicemanager_windows {
 
-  require automic::agent::agent_windows
-
   $file_suffix = $automic::servicemanager::file_suffix
   # cache directory to store temporary stuffs
   $cache_path = "C:/temp"

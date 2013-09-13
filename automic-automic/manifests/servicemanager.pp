@@ -2,6 +2,7 @@
 #
 
 class automic::servicemanager {
+  require automic::agent
   case $::architecture {
     /i(.{1})86/: { $file_suffix = 'i3' }
     /x(.*)64/: { $file_suffix = 'x6' }

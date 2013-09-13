@@ -13,13 +13,15 @@
 include automic
 
 # create deployment target
-automic_deployment_target { 'Puppet VM Agent':
-  folder      => 'D_X1',
-  owner       => 'admin',
-  type        => 'Tomcat',
-  environment => 'Test',
-  agent       => 'PC0609-VM',
-  connection  => { 'url' => 'http://172.16.36.12/4low', 'username' => 'admin', 'password' => 'bond' },
-  properties  => { 'home_directory' => '/opt/tomcat', 'port' => 8080 },
-  ensure      => present,
+automic_deployment_target { $::fqdn:
+  folder              => 'D_X1',
+  owner               => 'admin',
+  type                => 'Tomcat',
+  environment         => 'Test',
+  agent               => upcase($::fqdn),
+  connection          => { 'url' => 'http://172.16.36.12/4low', 'username' => 'admin', 'password' => 'bond' },
+  properties          => { 'home_directory' => '/opt/tomcat', 'port' => 8080, 'host' => 'localhost' },
+  dynamic_properties  => { 'myValue' => { 'namespace' => '/my/name/space', 'value' => 'my value', 'type' => 'SingleLineText', 'description' => 'This is my value' }, 
+                           'version' => { 'namespace' => '/my/version', 'value' => '1.1.3', 'type' => 'SingleLineText', 'description' => 'The version number'  }  },
+  ensure              => present,
 }
