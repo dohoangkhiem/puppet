@@ -5,6 +5,7 @@ class automic::servicemanager::servicemanager_windows {
 
   $file_suffix = $automic::servicemanager::file_suffix
   # cache directory to store temporary stuffs
+  # TODO: Use system temporary directory, like C:/ProgramData or ApplicationData in user's directory!?
   $cache_path = "C:/temp"
 
   $service_name = "Automic Windows-Agent"
@@ -42,6 +43,7 @@ class automic::servicemanager::servicemanager_windows {
     source => "puppet:///modules/automic/windows/ucsmgrw${file_suffix}",
     recurse => true,
     require => Exec["create_smgr_dir"],
+    mode => 0755,
   }
 
   file { "ini_file":  
@@ -68,13 +70,6 @@ class automic::servicemanager::servicemanager_windows {
     }
   }
 
-  file { "${automic::servicemanager_path}/bin/ucybsmgr.exe": 
-    ensure => present,
-    mode => 0777,
-    #group => 'Admistrators',
-    #owner => 'Administrator',
-  }
-
   # execute service manager to install to Windows Service
   exec { "install_service":
     cwd => "${automic::servicemanager_path}/bin",
@@ -90,26 +85,12 @@ class automic::servicemanager::servicemanager_windows {
   }
 
   # install Service Manager Dialog
-  #file { "smd_pkg":
-  # ensure => file,
-  #  source => "puppet:///modules/automic/windows/ucsmdw${file_suffix}.zip",
-  #  path => "${cache_path}/automic_smd.zip",
-  #  require => File["cache_dir"],
-  #}
-
   exec { "create_smd_dir":
     command => "cmd.exe /c mkdir ${automic::servicemanager_path_dialog}",
     path => $::path,
     unless => "cmd.exe /c if exist ${automic::servicemanager_path_dialog} ( exit 0 ) else ( exit 1 )",
   }
   
-  # check target location
-  #file { "smd_dir": 
-  #  ensure => directory,
-  #  path => $automic::servicemanager_path_dialog,
-  #  require => Exec["create_smd_dir"],
-  #}
-
   # copy service manager dialog
   file { "copy_smd_pkg":
     path => $automic::servicemanager_path_dialog,
@@ -117,6 +98,7 @@ class automic::servicemanager::servicemanager_windows {
     recurse => true,
     ensure => directory,
     require => Exec["create_smd_dir"],
+    mode => 0755,
   }
 
   # configure Powershell (!)

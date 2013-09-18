@@ -1,1 +1,2 @@
-Puppet.features.add(:savon, :libs => ["savon", "httpclient"])
+Puppet.features.add(:savon, :libs => %w{rubygems httpclient savon})
+

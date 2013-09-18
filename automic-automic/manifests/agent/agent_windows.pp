@@ -39,6 +39,7 @@ class automic::agent::agent_windows {
     ensure => directory,
     recurse => true,
     require => Exec["create_agent_dir"],
+    mode => 0755,
   }
 
   # templating

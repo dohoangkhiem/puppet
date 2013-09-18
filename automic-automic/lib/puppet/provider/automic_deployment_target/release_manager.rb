@@ -2,13 +2,12 @@
 # required gems: httpclient, savon >= 2.0
 #
 
-require 'rubygems'
 require 'rexml/document'
 require 'csv'
 require 'savon' if Puppet.features.savon?
 
 Puppet::Type.type(:automic_deployment_target).provide :release_manager do
-  confine :feature => :savon
+  confine :feature => :savon # to confine provider to the feature that declared required libs
   
   desc "Release Manager provider to provide RM actions to deployment target type"
   
